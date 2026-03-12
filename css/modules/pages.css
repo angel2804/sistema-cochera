@@ -1056,6 +1056,46 @@
   letter-spacing: 0.5px;
 }
 
+/* ── Impresión térmica 80mm ── */
+@media print {
+  @page { size: 80mm auto; margin: 3mm 1mm; }
+
+  #print-root {
+    width: 80mm !important;
+    margin: 0 auto;
+    padding: 0;
+  }
+  #print-root .ticket-wrap {
+    width: 76mm;
+    font-size: 9pt;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 0;
+  }
+  #print-root .ticket-logo  { font-size: 11pt; color: #000 !important; }
+  #print-root .ticket-num   { font-size: 8pt;  color: #444 !important; }
+  #print-root .ticket-sep   { color: #666 !important; margin: 4px 0; }
+  #print-root .ticket-placa-grande {
+    font-size: 18pt;
+    color: #000 !important;
+    border: 2px solid #000;
+    padding: 3px;
+    margin: 5px 0;
+  }
+  #print-root .ticket-fila  { font-size: 8.5pt; padding: 2px 0;
+                               border-bottom: 1px dashed #aaa; }
+  #print-root .ticket-lbl   { color: #555 !important; }
+  #print-root .ticket-val   { color: #000 !important; }
+  #print-root .ticket-total-fila {
+    border-top: 2.5px solid #000;
+    padding-top: 4px;
+    margin-top: 5px;
+  }
+  #print-root .ticket-total-lbl { font-size: 8pt; }
+  #print-root .ticket-total-val { font-size: 16pt; color: #000 !important; }
+  #print-root .ticket-pie   { font-size: 7.5pt; color: #555 !important;
+                               padding-bottom: 4mm; }
+}
+
 /* ══════════════════════════════════════════════════════════
    COCHERA — Vista de vehículos en cochera (cochera.html)
    ══════════════════════════════════════════════════════════ */

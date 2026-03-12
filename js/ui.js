@@ -307,29 +307,83 @@ function abrirTicketNuevaPestana(htmlTicket) {
   <meta charset="UTF-8">
   <title>Ticket — COCHERA POS</title>
   <style>
+    /* ── Tamaño de página térmica 80mm ── */
+    @page {
+      size: 80mm auto;
+      margin: 3mm 1mm;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Courier New', Courier, monospace; background: #fff; color: #111;
-           display: flex; justify-content: center; padding: 24px; }
-    .ticket-wrap { width: 300px; border: 1px dashed #aaa; border-radius: 8px; padding: 18px 16px; }
-    .ticket-encabezado { text-align: center; margin-bottom: 8px; }
-    .ticket-logo { font-size: 1.1rem; font-weight: 700; letter-spacing: 2px; }
-    .ticket-num { font-size: 0.75rem; color: #555; margin-top: 2px; }
-    .ticket-sep { text-align: center; font-size: 0.7rem; color: #bbb; margin: 8px 0; }
-    .ticket-placa-grande { text-align: center; font-size: 1.8rem; font-weight: 700;
-           letter-spacing: 4px; margin: 10px 0; padding: 8px;
-           border: 2px solid #111; border-radius: 6px; }
-    .ticket-filas { margin: 8px 0; }
-    .ticket-fila { display: flex; justify-content: space-between; font-size: 0.75rem;
-           padding: 3px 0; border-bottom: 1px dotted #ddd; }
-    .ticket-lbl { color: #555; }
-    .ticket-val { font-weight: 700; text-align: right; max-width: 60%; }
-    .ticket-mono { font-family: 'Courier New', monospace; }
-    .ticket-total-fila { display: flex; justify-content: space-between; align-items: center;
-           margin-top: 8px; padding-top: 8px; border-top: 2px solid #111; }
-    .ticket-total-lbl { font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; }
-    .ticket-total-val { font-size: 1.4rem; font-weight: 700; color: #007a5e; }
-    .ticket-pie { text-align: center; font-size: 0.7rem; color: #888; margin-top: 12px; }
-    @media print { body { padding: 0; } .ticket-wrap { border: none; } }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: #fff;
+      color: #000;
+      width: 80mm;
+      margin: 0 auto;
+      padding: 4mm 2mm;
+      font-size: 9pt;
+    }
+    .ticket-wrap { width: 100%; }
+
+    /* Encabezado */
+    .ticket-encabezado { text-align: center; margin-bottom: 4px; }
+    .ticket-logo  { font-size: 11pt; font-weight: 700; letter-spacing: 3px; }
+    .ticket-num   { font-size: 8pt;  color: #444; margin-top: 2px; }
+
+    /* Separadores */
+    .ticket-sep   { text-align: center; font-size: 8pt; color: #666;
+                    margin: 5px 0; letter-spacing: 2px; }
+
+    /* Placa grande */
+    .ticket-placa-grande {
+      text-align: center;
+      font-size: 20pt;
+      font-weight: 700;
+      letter-spacing: 5px;
+      border: 2px solid #000;
+      border-radius: 3px;
+      padding: 4px 2px;
+      margin: 6px 0;
+    }
+
+    /* Filas de datos */
+    .ticket-filas { margin-bottom: 6px; }
+    .ticket-fila  {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+      padding: 2px 0;
+      border-bottom: 1px dashed #aaa;
+    }
+    .ticket-lbl   { color: #555; }
+    .ticket-val   { font-weight: 700; text-align: right; max-width: 58%; }
+    .ticket-mono  { font-family: 'Courier New', monospace; }
+
+    /* Total */
+    .ticket-total-fila {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 2.5px solid #000;
+    }
+    .ticket-total-lbl { font-size: 8pt; font-weight: 700;
+                        letter-spacing: 2px; text-transform: uppercase; }
+    .ticket-total-val { font-size: 17pt; font-weight: 700; }
+
+    /* Pie */
+    .ticket-pie {
+      text-align: center;
+      font-size: 7.5pt;
+      color: #555;
+      margin-top: 8px;
+      padding-bottom: 4mm;
+    }
+
+    @media print {
+      body   { padding: 0; width: 100%; }
+      .ticket-wrap { border: none; }
+    }
   </style>
 </head>
 <body>
