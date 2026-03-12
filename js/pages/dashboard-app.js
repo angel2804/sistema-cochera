@@ -998,6 +998,12 @@ async function cargarUsuarios() {
   }
 }
 
+// Elimina espacios y convierte a minúsculas — usar como función nombrada
+// para evitar problemas con \s dentro de atributos HTML inyectados via innerHTML
+function sanitizarCampoUsuario(inp) {
+  inp.value = inp.value.toLowerCase().split(' ').join('');
+}
+
 function abrirModalNuevoUsuario() {
   const html = `
     <div class="form-group-mb">
@@ -1007,7 +1013,7 @@ function abrirModalNuevoUsuario() {
     <div class="form-group-mb">
       <label class="form-label">Usuario (login)</label>
       <input type="text" id="nu-usuario" class="form-input" placeholder="usuario"
-        oninput="this.value=this.value.toLowerCase().replace(/\s/g,'')" />
+        oninput="sanitizarCampoUsuario(this)" />
     </div>
     <div class="form-group-mb">
       <label class="form-label">Contraseña</label>
