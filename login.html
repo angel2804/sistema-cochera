@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COCHERA POS — Acceso</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <div id="login-logo-img-wrap" style="display:none;margin-bottom:12px">
+          <img id="login-logo-img" src="" alt="Logo empresa"
+            style="max-height:90px;max-width:220px;object-fit:contain" />
+        </div>
+        <span class="logo-icon" id="login-logo-emoji">🏎️</span>
+        <h1>COCHERA</h1>
+        <p>Sistema de Gestión</p>
+      </div>
+
+      <div id="login-error" class="login-error"></div>
+
+      <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="inp-usuario">Usuario</label>
+          <input type="text" id="inp-usuario" placeholder="Ingresa tu usuario"
+            autocomplete="username"
+            oninput="this.value=this.value.toLowerCase().replace(/\s/g,'')"
+            required />
+        </div>
+        <div class="form-group">
+          <label for="inp-password">Contraseña</label>
+          <input type="password" id="inp-password" placeholder="••••••••"
+            autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="login-btn" id="btn-login">
+          <span class="spinner" id="login-spinner"></span>
+          <span id="login-btn-text">Ingresar →</span>
+        </button>
+      </form>
+
+      <div id="primer-uso-nota" class="primer-uso-nota">
+        👋 Primera vez aquí. Se ha creado el usuario admin por defecto.<br />
+        <strong>Usuario: admin | Contraseña: admin123</strong>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/pages/login-app.js"></script>
+</body>
+</html>

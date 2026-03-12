@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COCHERA POS — Clientes</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="cerrarSidebar()"></div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h2>🏎️ COCHERA POS</h2>
+      <span>Panel de Administración</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" href="dashboard.html"><span>🏠</span> Dashboard</a>
+      <a class="nav-item" href="dashboard.html"><span>🚗</span> Registrar Auto</a>
+      <a class="nav-item" href="cochera.html"><span>🅿️</span> En Cochera</a>
+      <a class="nav-item" href="dashboard.html"><span>📋</span> Historial</a>
+      <a class="nav-item" href="dashboard.html"><span>📊</span> Estadísticas</a>
+      <div class="nav-section">Administración</div>
+      <a class="nav-item" href="dashboard.html"><span>👥</span> Usuarios</a>
+      <div class="nav-item active"><span>👤</span> Clientes</div>
+      <a class="nav-item" href="reportes.html"><span>📋</span> Reportes</a>
+      <a class="nav-item" href="horarios.html"><span>📅</span> Horarios</a>
+      <a class="nav-item" href="pre-registro.html"><span>📦</span> Pre-registro</a>
+      <a class="nav-item" href="dashboard.html"><span>⚙️</span> Configuración</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">👑</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebar-nombre">Admin</div>
+          <div class="sidebar-user-role">Administrador</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="Auth.logout()">🚪 Cerrar Sesión</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="btn-icon-sm" onclick="toggleSidebar()">☰</button>
+        <span class="topbar-title">👤 CLIENTES</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-time" id="reloj">--:--:--</span>
+        <button class="btn-icon-sm" id="btn-modo" title="Modo oscuro/claro"></button>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- Acciones superiores -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div>
+          <input type="text" id="inp-buscar-cliente" class="form-input"
+            style="max-width:300px;padding:9px 12px"
+            placeholder="🔍 Buscar por nombre o celular..."
+            oninput="filtrarClientes()" />
+        </div>
+        <button class="btn btn-success" onclick="abrirModalNuevoCliente()">➕ Nuevo Cliente</button>
+      </div>
+
+      <!-- Grid de clientes -->
+      <div class="clientes-grid" id="clientes-grid">
+        <p style="color:var(--text3)">Cargando clientes...</p>
+      </div>
+
+      <!-- Paginación -->
+      <div class="clientes-pag-wrap" id="clientes-pagination" style="display:none">
+        <span class="pag-info" id="clientes-pag-info">Página 1</span>
+        <div class="pag-btns">
+          <button class="pag-btn" id="clientes-pag-prev"
+            onclick="cambiarPaginaClientes(-1)" disabled>← Anterior</button>
+          <button class="pag-btn" id="clientes-pag-next"
+            onclick="cambiarPaginaClientes(1)">Siguiente →</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/clientes.js"></script>
+<script src="js/pages/clientes-app.js"></script>
+</body>
+</html>

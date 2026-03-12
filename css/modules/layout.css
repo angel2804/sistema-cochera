@@ -1,0 +1,389 @@
+/* ============================================================
+   LAYOUT — Estructura del shell de la aplicación
+   Versiones canónicas (multi-página y worker) prevalecen.
+   ============================================================ */
+
+/* ── App container ── */
+.app { display: flex; min-height: 100vh; }
+
+/* ── Sidebar (multi-página: admin pages) ── */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 200;
+  transition: left 0.25s ease;
+  overflow-y: auto;
+}
+
+.sidebar.closed { left: -240px; }
+
+@media (max-width: 900px) {
+  .sidebar { left: -240px; }
+  .sidebar.open { left: 0; }
+}
+
+.sidebar-logo { padding: 20px; border-bottom: 1px solid var(--border); }
+.sidebar-logo h2 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin: 0 0 2px;
+}
+.sidebar-logo span { font-size: 0.7rem; color: var(--text3); }
+
+.sidebar-nav { padding: 12px 0; flex: 1; }
+
+.nav-section {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 20px 6px;
+  margin-top: 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  color: var(--text2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 8px;
+  margin: 2px 8px;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.nav-item:hover { background: var(--bg2); color: var(--text); }
+.nav-item.active { background: var(--accent-dim); color: var(--accent); }
+
+/* Íconos en nav (SPA dashboard) */
+.nav-item .icon { font-size: 1.2rem; width: 24px; text-align: center; }
+
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+
+.sidebar-user { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+
+.sidebar-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--blue-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.sidebar-user-name { font-size: 0.82rem; font-weight: 800; color: var(--text); }
+.sidebar-user-role { font-size: 0.7rem; color: var(--text3); }
+
+/* User info widget (SPA dashboard sidebar) */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  margin-bottom: 10px;
+}
+
+.user-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+
+.user-name { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+.user-role {
+  font-size: 0.68rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+/* Botón logout (sidebar footer) */
+.btn-logout {
+  width: 100%;
+  padding: 9px;
+  background: var(--red-dim);
+  border: 1px solid rgba(255,71,87,0.2);
+  border-radius: var(--radius);
+  color: var(--red);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-logout:hover { background: rgba(255,71,87,0.2); }
+
+/* ── Main content ── */
+.main-content { flex: 1; margin-left: 240px; display: flex; flex-direction: column; }
+@media (max-width: 900px) { .main-content { margin-left: 0; } }
+
+/* ── Content area ── */
+.content-area { padding: 24px 28px; max-width: 1100px; margin: 0 auto; }
+
+/* ── Botón ícono pequeño (topbar) ── */
+.btn-icon-sm {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.15s;
+}
+.btn-icon-sm:hover { border-color: var(--border2); color: var(--text); }
+
+/* ── Sidebar overlay ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 150;
+}
+.sidebar-overlay.open,
+.sidebar-overlay.active { display: block; }
+
+/* ── Topbar (multi-página admin) ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar-left  { display: flex; align-items: center; gap: 12px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text2);
+}
+
+.topbar-time {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text2);
+  min-width: 72px;
+  text-align: center;
+}
+
+/* Topbar SPA (dashboard.html) */
+.page-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+
+/* Toggle sidebar (mobile) */
+.menu-toggle {
+  display: none;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 1.3rem;
+  align-items: center; justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .menu-toggle { display: flex; }
+  .content-area { padding: 16px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   WORKER LAYOUT — turno.html
+   ══════════════════════════════════════════════════════════ */
+
+.worker-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.worker-topbar-left  { display: flex; align-items: center; gap: 12px; }
+
+.worker-topbar-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+.worker-topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.worker-time {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text2);
+  min-width: 72px;
+  text-align: center;
+}
+
+.worker-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text2);
+}
+
+/* ── Worker sidebar (slide-in drawer) ── */
+.worker-sidebar {
+  position: fixed;
+  left: -260px;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  z-index: 200;
+  transition: left 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+
+.worker-sidebar.open { left: 0; }
+
+.worker-sidebar-logo {
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.worker-sidebar-logo h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin: 0;
+}
+
+.worker-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: var(--text2);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 8px;
+  margin: 2px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.worker-sidebar-link:hover { background: var(--bg2); color: var(--text); }
+.worker-sidebar-link.active { background: var(--accent-dim); color: var(--accent); }
+
+.worker-sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px 0;
+  border-top: 1px solid var(--border);
+}
+
+.sidebar-overlay2 {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 150;
+}
+.sidebar-overlay2.open { display: block; }
+
+/* ── Split view (turno.html) ── */
+.split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 20px;
+  height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .split-view { grid-template-columns: 1fr; height: auto; }
+}
+
+/* ── Split cards (columnas de turno.html) ── */
+.split-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.split-card-title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}

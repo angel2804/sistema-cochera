@@ -1,0 +1,62 @@
+/* ============================================================
+   VARIABLES — Tokens de diseño, modo claro y reset base
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ── Modo oscuro (default) ── */
+:root {
+  --bg: #0f1117;
+  --bg2: #161b27;
+  --bg3: #1e2535;
+  --surface: #242d40;
+  --surface2: #2d3850;
+  --border: #334060;
+  --border2: #3d4f70;
+  --accent: #00d4aa;
+  --accent2: #00b894;
+  --accent-glow: rgba(0, 212, 170, 0.25);
+  --accent-dim: rgba(0, 212, 170, 0.12);
+  --yellow: #f9ca24;
+  --yellow-dim: rgba(249, 202, 36, 0.12);
+  --red: #ff4757;
+  --red-dim: rgba(255, 71, 87, 0.12);
+  --blue: #4facfe;
+  --blue-dim: rgba(79, 172, 254, 0.12);
+  --text: #e8edf5;
+  --text2: #8fa3c0;
+  --text3: #5a6f8a;
+  --font-display: 'Rajdhani', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-body: 'Nunito', sans-serif;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-accent: 0 0 24px rgba(0, 212, 170, 0.2);
+}
+
+/* ── Modo claro ── */
+body.light-mode {
+  --bg: #f0f4f8;
+  --bg2: #e4eaf2;
+  --bg3: #d8e2ee;
+  --surface: #ffffff;
+  --surface2: #eef2f8;
+  --border: #c8d6e8;
+  --border2: #b0c4d8;
+  --accent: #00a085;
+  --accent2: #007d68;
+  --accent-glow: rgba(0, 160, 133, 0.2);
+  --accent-dim: rgba(0, 160, 133, 0.1);
+  --yellow: #e8a000;
+  --yellow-dim: rgba(232, 160, 0, 0.1);
+  --red: #e5384a;
+  --red-dim: rgba(229, 56, 74, 0.1);
+  --blue: #2980b9;
+  --blue-dim: rgba(41, 128, 185, 0.1);
+  --text: #1a2535;
+  --text2: #4a5f78;
+  --text3: #7a92aa;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+

@@ -1,0 +1,11 @@
+/* ============================================================
+   COCHERA POS — Hoja de entrada CSS
+   Este archivo únicamente importa los módulos. No contiene
+   reglas propias. Para editar estilos, ve a css/modules/.
+   ============================================================ */
+
+@import url('./modules/variables.css');
+@import url('./modules/base.css');
+@import url('./modules/layout.css');
+@import url('./modules/components.css');
+@import url('./modules/pages.css');

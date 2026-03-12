@@ -1,0 +1,25 @@
+/* ============================================================
+   COCHERA POS — Reset & Estilos base de elementos
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+
+a      { color: var(--accent); text-decoration: none; }
+button { cursor: pointer; border: none; outline: none; font-family: var(--font-body); }

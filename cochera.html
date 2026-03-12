@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COCHERA POS — En Cochera</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">🅿️ EN COCHERA</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="reloj-cochera">--:--:--</span>
+      <button class="btn-icon-sm" id="btn-modo-cochera" title="Modo oscuro/claro"></button>
+      <div class="user-badge">
+        <span>👤</span>
+        <span id="topbar-nombre">Usuario</span>
+      </div>
+      <button class="btn-icon-sm" onclick="Auth.logout()" title="Cerrar sesión">🚪</button>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- Link de regreso -->
+    <div id="back-link-wrap"></div>
+
+    <!-- Stats rápidas -->
+    <div class="cochera-stats">
+      <div class="cochera-stat">
+        <span style="font-size:1.6rem">🚗</span>
+        <div>
+          <div class="cochera-stat-val" id="stat-dentro">0</div>
+          <div class="cochera-stat-label">En cochera</div>
+        </div>
+      </div>
+      <div class="cochera-stat">
+        <span style="font-size:1.6rem">🅿️</span>
+        <div>
+          <div class="cochera-stat-val" id="stat-libres">0</div>
+          <div class="cochera-stat-label">Espacios libres</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="search-bar" style="margin-bottom: 20px;">
+      <input type="text" id="inp-buscar-placa" class="search-input" placeholder="🔍 Buscar por placa..." oninput="filtrarTabla()" />
+      <button class="btn btn-secondary" onclick="cargarAutos()" style="white-space: nowrap; height: 100%;">🔄 Actualizar</button>
+    </div>
+
+
+    <!-- Tabla de vehículos -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-family:var(--font-display);font-size:0.82rem;font-weight:800;letter-spacing:2px;color:var(--text3);text-transform:uppercase">
+          Vehículos dentro
+        </span>
+        <span style="font-size:0.78rem;color:var(--text3)" id="ultima-actualizacion">—</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Tipo</th>
+              <th>Cliente</th>
+              <th>Celular</th>
+              <th>Entrada</th>
+              <th>Tiempo</th>
+              <th>Registrado por</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-cochera">
+            <tr><td colspan="8" class="empty-state"><span class="es-icon">⏳</span><p>Cargando...</p></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal salida (se crea dinámicamente) -->
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/turnos.js"></script>
+  <script src="js/vehiculos.js"></script>
+  <script src="js/clientes.js"></script>
+  <script src="js/reportes.js"></script>
+  <script src="js/pages/cochera-app.js"></script>
+</body>
+</html>

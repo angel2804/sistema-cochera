@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COCHERA POS — Turno</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<!-- Overlay sidebar -->
+<div class="sidebar-overlay2" id="worker-overlay" onclick="cerrarSidebarWorker()"></div>
+
+<!-- Sidebar trabajador -->
+<div class="worker-sidebar" id="worker-sidebar">
+  <div class="worker-sidebar-logo">
+    <h3>🏎️ COCHERA POS</h3>
+  </div>
+  <div class="worker-sidebar-link active">
+    <span>📝</span> Registrar
+  </div>
+  <a class="worker-sidebar-link" href="cochera.html">
+    <span>🅿️</span> En Cochera
+  </a>
+  <div class="worker-sidebar-link" onclick="verMiHorario()">
+    <span>📅</span> Mi Horario
+  </div>
+  <div class="worker-sidebar-footer">
+    <button class="cerrar-turno-btn" onclick="confirmarCerrarTurno()">
+      🔴 Cerrar Turno
+    </button>
+  </div>
+</div>
+
+<!-- ══ PANTALLA: SIN TURNO ══ -->
+<div class="turno-init" id="pantalla-init" style="display:none">
+  <!-- Botón logout fijo arriba a la derecha -->
+  <div class="turno-logout-wrap">
+    <button onclick="Auth.logout()" class="btn btn-secondary">🚪 Salir</button>
+  </div>
+
+  <div class="turno-init-card">
+    <div class="turno-init-icon">🏎️</div>
+    <h2>INICIAR TURNO</h2>
+    <p class="turno-nombre-trabajador" id="init-nombre-trabajador"></p>
+
+    <!-- Turno asignado por el admin (se muestra si hay horario) -->
+    <div id="init-turno-asignado" class="turno-asignado-banner"></div>
+
+    <p class="turno-subtitle">Selecciona el tipo de turno para comenzar</p>
+    <div class="turno-type-grid" id="turno-type-grid">
+      <div class="turno-type-btn" data-tipo="Mañana" onclick="seleccionarTipoTurno('Mañana')">
+        <span class="t-icon">🌅</span>
+        <span class="t-name">MAÑANA</span>
+      </div>
+      <div class="turno-type-btn" data-tipo="Tarde" onclick="seleccionarTipoTurno('Tarde')">
+        <span class="t-icon">🌤️</span>
+        <span class="t-name">TARDE</span>
+      </div>
+      <div class="turno-type-btn" data-tipo="Noche" onclick="seleccionarTipoTurno('Noche')">
+        <span class="t-icon">🌙</span>
+        <span class="t-name">NOCHE</span>
+      </div>
+      <div class="turno-type-btn" data-tipo="Todo el día" onclick="seleccionarTipoTurno('Todo el día')">
+        <span class="t-icon">📅</span>
+        <span class="t-name">TODO EL DÍA</span>
+      </div>
+    </div>
+    <button class="btn btn-success btn-full" id="btn-iniciar-turno" onclick="iniciarTurno()">
+      ✅ Iniciar Turno
+    </button>
+    <div id="error-init-turno" class="error-turno"></div>
+    <button class="btn btn-secondary btn-full init-horario-btn"
+      onclick="verMiHorario()">
+      📅 Ver Mi Horario
+    </button>
+  </div>
+</div>
+
+<!-- ══ PANTALLA: CON TURNO ACTIVO ══ -->
+<div id="pantalla-turno" style="display:none">
+
+  <!-- Topbar -->
+  <div class="worker-topbar">
+    <div class="worker-topbar-left">
+      <button class="btn-icon-sm" onclick="toggleSidebarWorker()">☰</button>
+      <span class="worker-topbar-title">🚗 TURNO ACTIVO</span>
+    </div>
+    <div class="worker-topbar-right">
+      <span class="worker-time" id="reloj-worker">--:--:--</span>
+      <button class="btn-icon-sm" id="btn-modo-worker" title="Modo oscuro/claro"></button>
+      <div class="worker-user-badge">
+        <span>👤</span>
+        <span id="topbar-nombre">Usuario</span>
+      </div>
+      <button class="btn-icon-sm" onclick="Auth.logout()" title="Cerrar sesión">🚪</button>
+    </div>
+  </div>
+
+  <!-- Banner de turno -->
+  <div class="turno-banner-wrap">
+    <div class="turno-banner" id="turno-banner">
+      <span class="turno-banner-info" id="banner-turno-info">Turno activo</span>
+      <a href="cochera.html" class="banner-cochera-link">🅿️ Ver cochera →</a>
+    </div>
+  </div>
+
+  <!-- Vista dividida -->
+  <div class="split-view">
+
+    <!-- ═══ COLUMNA IZQUIERDA: ENTRADA ═══ -->
+    <div class="split-card">
+      <div class="split-card-title">🚗 Registrar Entrada</div>
+
+      <!-- Placa -->
+      <div class="form-group-mb">
+        <label class="form-label">Placa *</label>
+        <input type="text" id="ent-placa" class="form-input form-input-placa"
+          placeholder="ABC-123"
+          oninput="this.value=this.value.toUpperCase();autocompletarCliente(this.value)"
+          onkeydown="if(event.key==='Enter') registrarEntrada()"
+          maxlength="8"
+          autofocus />
+      </div>
+
+      <!-- Sugerencia de cliente -->
+      <div class="autocomplete-card" id="autocomplete-card">
+        <div class="autocomplete-info">
+          <strong id="ac-nombre">—</strong>
+          <span id="ac-celular">—</span>
+        </div>
+        <button class="btn btn-secondary" onclick="usarClienteAutocompletado()">Usar ✓</button>
+      </div>
+
+      <!-- Tipo de vehículo -->
+      <div class="form-group-mb">
+        <label class="form-label">Tipo de vehículo</label>
+        <div class="tipo-vehiculo-grid" id="ent-tipo-grid"></div>
+      </div>
+
+      <!-- Nombre cliente -->
+      <div class="form-group-mb">
+        <label class="form-label">Nombre del cliente</label>
+        <input type="text" id="ent-nombre" class="form-input" placeholder="Nombre del cliente" />
+      </div>
+
+      <!-- Celular -->
+      <div class="form-group-mb">
+        <label class="form-label">Celular</label>
+        <input type="text" id="ent-celular" class="form-input" placeholder="Número de celular" />
+      </div>
+
+      <!-- Tarifa pactada por día (obligatorio) -->
+      <div class="form-group-mb">
+        <label class="form-label">Tarifa por día (S/) *</label>
+        <input type="number" id="ent-tarifa" class="form-input"
+          placeholder="Ej: 15.00" min="0" step="0.50"
+          oninput="sincronizarTarifaMonto()" />
+      </div>
+
+      <!-- Cobrar al ingreso -->
+      <div class="cobro-toggle-wrap">
+        <label>¿Cobrar al ingreso?</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="ent-cobrar" onchange="toggleMontoIngreso(this.checked)" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- Monto ingreso (oculto por defecto, se auto-llena con la tarifa) -->
+      <div class="monto-ingreso-wrap" id="monto-ingreso-wrap">
+        <label class="form-label">Monto al ingreso (S/)</label>
+        <input type="number" id="ent-monto" class="form-input" placeholder="0.00" min="0" step="0.50" />
+      </div>
+
+      <!-- Hora de entrada -->
+      <div class="hora-entrada-badge">
+        <span class="hora-entrada-label">⏰ Hora de entrada</span>
+        <span class="hora-entrada-value" id="hora-entrada-live">--:--:--</span>
+      </div>
+
+      <button class="btn btn-success btn-full" id="btn-registrar-entrada" onclick="registrarEntrada()">
+        🚗 Registrar Entrada
+      </button>
+    </div>
+
+    <!-- ═══ COLUMNA DERECHA: SALIDA ═══ -->
+    <div class="split-card">
+      <div class="split-card-title">🏁 Registrar Salida</div>
+
+      <!-- Buscar / filtrar placa -->
+      <div class="form-group-mb">
+        <label class="form-label">Buscar / filtrar placa</label>
+        <div class="sal-buscar-row">
+          <input type="text" id="sal-placa"
+            class="form-input form-input-placa sal-placa-input"
+            placeholder="ABC-123"
+            oninput="this.value=this.value.toUpperCase();filtrarListaRapida(this.value)"
+            onkeydown="if(event.key==='Enter') seleccionarPrimerResultado()"
+            maxlength="8" />
+          <button class="btn btn-secondary sal-buscar-btn"
+            onclick="buscarAutoSalida()">
+            🔍
+          </button>
+        </div>
+      </div>
+
+      <!-- Lista rápida de vehículos en cochera -->
+      <div class="lista-rapida-wrap">
+        <div class="lista-rapida-titulo">En cochera ahora</div>
+        <div id="lista-rapida" class="lista-rapida">
+          <p class="lista-rapida-vacia">Inicia turno para ver vehículos</p>
+        </div>
+      </div>
+
+      <!-- Auto encontrado -->
+      <div class="auto-encontrado" id="auto-encontrado">
+        <div class="auto-encontrado-placa" id="sal-placa-display">—</div>
+        <div class="auto-info-grid">
+          <div>
+            <span class="info-label">Tipo</span><br/>
+            <span id="sal-tipo">—</span>
+          </div>
+          <div>
+            <span class="info-label">Cliente</span><br/>
+            <span id="sal-cliente">—</span>
+          </div>
+          <div>
+            <span class="info-label">Entrada</span><br/>
+            <span id="sal-entrada">—</span>
+          </div>
+          <div>
+            <span class="info-label">Tiempo</span><br/>
+            <span id="sal-tiempo" class="sal-tiempo-val">—</span>
+          </div>
+          <div>
+            <span class="info-label">Ya cobrado</span><br/>
+            <span id="sal-cobrado-ingreso" class="sal-cobrado-val">—</span>
+          </div>
+          <div>
+            <span class="info-label">Celular</span><br/>
+            <span id="sal-celular">—</span>
+          </div>
+        </div>
+        <!-- Badge de tarifa pactada -->
+        <div class="sal-tarifa-badge" id="sal-tarifa-badge" style="display:none">
+          <span class="sal-tarifa-lbl">📋 Tarifa pactada</span>
+          <span class="sal-tarifa-val" id="sal-tarifa-val">—</span>
+        </div>
+      </div>
+
+      <!-- Mensaje no encontrado -->
+      <div id="sal-no-encontrado" class="sal-no-encontrado">
+        <div class="sal-no-encontrado-icon">🔍</div>
+        <p style="font-size:0.85rem">No se encontró ningún vehículo con esa placa.</p>
+      </div>
+
+      <!-- Monto de salida -->
+      <div class="form-group-mb" id="sal-monto-wrap" style="display:none">
+        <label class="form-label">Monto de salida (S/)</label>
+        <input type="number" id="sal-monto" class="form-input" placeholder="0.00" min="0" step="0.50" />
+        <span class="campo-nota">Dejar en 0 si no se cobra en la salida</span>
+      </div>
+
+      <button class="btn btn-warning btn-full" id="btn-registrar-salida"
+        onclick="iniciarProcesoSalida()" style="display:none">
+        🏁 Registrar Salida
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="firebase/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/turnos.js"></script>
+<script src="js/clientes.js"></script>
+<script src="js/vehiculos.js"></script>
+<script src="js/reportes.js"></script>
+<script src="js/pages/turno-app.js"></script>
+
+</body>
+</html>

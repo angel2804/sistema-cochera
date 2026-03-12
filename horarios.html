@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COCHERA POS — Horarios</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="cerrarSidebar()"></div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h2>🏎️ COCHERA POS</h2>
+      <span>Panel de Administración</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item" href="dashboard.html"><span>🏠</span> Dashboard</a>
+      <a class="nav-item" href="dashboard.html"><span>🚗</span> Registrar Auto</a>
+      <a class="nav-item" href="cochera.html"><span>🅿️</span> En Cochera</a>
+      <a class="nav-item" href="dashboard.html"><span>📋</span> Historial</a>
+      <a class="nav-item" href="dashboard.html"><span>📊</span> Estadísticas</a>
+      <div class="nav-section">Administración</div>
+      <a class="nav-item" href="dashboard.html"><span>👥</span> Usuarios</a>
+      <a class="nav-item" href="clientes.html"><span>👤</span> Clientes</a>
+      <a class="nav-item" href="reportes.html"><span>📋</span> Reportes</a>
+      <div class="nav-item active"><span>📅</span> Horarios</div>
+      <a class="nav-item" href="pre-registro.html"><span>📦</span> Pre-registro</a>
+      <a class="nav-item" href="dashboard.html"><span>⚙️</span> Configuración</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">👑</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebar-nombre">Admin</div>
+          <div class="sidebar-user-role">Administrador</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="Auth.logout()">🚪 Cerrar Sesión</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="btn-icon-sm" onclick="toggleSidebar()">☰</button>
+        <span class="topbar-title">📅 HORARIOS</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-time" id="reloj">--:--:--</span>
+        <button class="btn-icon-sm" id="btn-modo" title="Modo oscuro/claro"></button>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- Selector de trabajador -->
+      <div class="card" style="margin-bottom:20px">
+        <div style="font-size:0.72rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px">
+          Editar Horario de Trabajador
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <label class="form-label">Seleccionar trabajador</label>
+            <select id="sel-trabajador" class="form-input" onchange="cargarHorario()" style="width:100%">
+              <option value="">-- Selecciona un trabajador --</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de horario -->
+      <div id="horario-wrap" style="display:none">
+        <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+            <span style="font-size:0.82rem;font-weight:800;color:var(--text2)" id="horario-titulo">Horario semanal</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="horario-tabla">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:10px 16px">Turno/Día</th>
+                  <th>Lunes</th>
+                  <th>Martes</th>
+                  <th>Miércoles</th>
+                  <th>Jueves</th>
+                  <th>Viernes</th>
+                  <th>Sábado</th>
+                  <th>Domingo</th>
+                </tr>
+              </thead>
+              <tbody id="horario-tbody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="text-align:right;margin-bottom:20px">
+          <button class="btn btn-success" id="btn-guardar-horario" onclick="guardarHorario()">
+            💾 Guardar Horario
+          </button>
+        </div>
+      </div>
+
+      <!-- Resumen de todos los horarios -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:0.82rem;font-weight:800;color:var(--text2)">📊 Resumen de Todos los Horarios</span>
+          <button class="btn btn-secondary" style="font-size:0.78rem;padding:7px 12px" onclick="cargarResumenHorarios()">🔄 Actualizar</button>
+        </div>
+        <div id="resumen-horarios" style="padding:16px">
+          <p style="color:var(--text3);font-size:0.85rem">Selecciona un trabajador o actualiza para ver el resumen.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pages/horarios-app.js"></script>
+</body>
+</html>

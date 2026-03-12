@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cochera POS</title>
+  <script src="js/auth.js"></script>
+  <script>
+    // Redirigir según rol si hay sesión activa
+    const s = Auth.get();
+    if (s) {
+      window.location.href = s.rol === 'admin' ? 'dashboard.html' : 'turno.html';
+    } else {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body>
+  <p>Redirigiendo... <a href="login.html">Click aquí</a></p>
+</body>
+</html>

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COCHERA POS — Dashboard Admin</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="cerrarSidebar()"></div>
+
+<div class="app">
+
+  <!-- ═══════ SIDEBAR ═══════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h2>🏎️ COCHERA POS</h2>
+      <span>Panel de Administración</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" data-section="dashboard" onclick="navegarA('dashboard')">
+        <span>🏠</span> Dashboard
+      </div>
+      <div class="nav-item" data-section="registro" onclick="navegarA('registro')">
+        <span>🚗</span> Entrada / Salida
+      </div>
+      <a class="nav-item" href="cochera.html">
+        <span>🅿️</span> En Cochera
+      </a>
+      <div class="nav-item" data-section="historial" onclick="navegarA('historial')">
+        <span>📋</span> Historial
+      </div>
+      <div class="nav-item" data-section="estadisticas" onclick="navegarA('estadisticas')">
+        <span>📊</span> Estadísticas
+      </div>
+
+      <div class="nav-section">Administración</div>
+      <div class="nav-item" data-section="usuarios" onclick="navegarA('usuarios')">
+        <span>👥</span> Usuarios
+      </div>
+      <a class="nav-item" href="clientes.html">
+        <span>👤</span> Clientes
+      </a>
+      <a class="nav-item" href="reportes.html">
+        <span>📋</span> Reportes
+      </a>
+      <a class="nav-item" href="horarios.html">
+        <span>📅</span> Horarios
+      </a>
+      <a class="nav-item" href="pre-registro.html">
+        <span>📦</span> Pre-registro
+      </a>
+      <div class="nav-item" data-section="alertas" onclick="navegarA('alertas')">
+        <span>🔔</span> Alertas de Caja
+        <span class="nav-alerta-badge" id="nav-alertas-count" style="display:none">0</span>
+      </div>
+      <div class="nav-item" data-section="config" onclick="navegarA('config')">
+        <span>⚙️</span> Configuración
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">👑</div>
+        <div>
+          <div class="sidebar-user-name" id="sidebar-nombre">Admin</div>
+          <div class="sidebar-user-role">Administrador</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="Auth.logout()">🚪 Cerrar Sesión</button>
+    </div>
+  </aside>
+
+  <!-- ═══════ MAIN ═══════ -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="btn-icon-sm" onclick="toggleSidebar()">☰</button>
+        <span class="topbar-title" id="page-title">🏠 Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-time" id="reloj">--:--:--</span>
+        <button class="btn-icon-sm" id="btn-modo" title="Modo oscuro/claro"></button>
+      </div>
+    </div>
+
+    <!-- ══════════ SECCIÓN: DASHBOARD ══════════ -->
+    <section class="section active" id="section-dashboard">
+      <div class="content-area">
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon green">🚗</div>
+            <div>
+              <div class="stat-value" id="stat-autos">0</div>
+              <div class="stat-label">Autos en cochera</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon yellow">💰</div>
+            <div>
+              <div class="stat-value" id="stat-ingresos">S/ 0</div>
+              <div class="stat-label">Ingresos del día</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">🅿️</div>
+            <div>
+              <div class="stat-value" id="stat-disponibles">0</div>
+              <div class="stat-label">Espacios disponibles</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div>
+              <div class="stat-value" id="stat-atendidos">0</div>
+              <div class="stat-label">Atendidos hoy</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banner turno -->
+        <div id="banner-turno" style="display:none;margin-bottom:16px"></div>
+
+        <!-- Barra de ocupación -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-ocupacion-header">
+            <span class="card-ocupacion-title">🅿️ OCUPACIÓN DE ESPACIOS</span>
+            <span class="card-ocupacion-text" id="texto-espacios">Cargando...</span>
+          </div>
+          <div class="spaces-bar">
+            <div class="spaces-fill" id="barra-espacios" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="section-label">⚡ ACCIONES RÁPIDAS</div>
+        <div class="quick-actions">
+          <div class="action-btn green" onclick="navegarA('registro')">
+            <span class="icon">🚗</span> Entrada / Salida
+          </div>
+          <a class="action-btn yellow" href="cochera.html">
+            <span class="icon">🅿️</span> Ver Cochera
+          </a>
+          <div class="action-btn blue" onclick="navegarA('historial')">
+            <span class="icon">📋</span> Historial
+          </div>
+          <div class="action-btn" onclick="navegarA('estadisticas')"
+            style="border-color:rgba(79,172,254,0.3);background:var(--blue-dim);color:var(--blue)">
+            <span class="icon">📊</span> Estadísticas
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════ SECCIÓN: REGISTRAR AUTO ══════════ -->
+    <section class="section" id="section-registro">
+      <div class="content-area">
+
+        <!-- Banner turno activo (compartido entrada/salida) -->
+        <div id="banner-registro-turno" style="margin-bottom:16px"></div>
+
+        <div class="split-view">
+
+          <!-- ═══ COLUMNA IZQUIERDA: ENTRADA ═══ -->
+          <div class="split-card">
+            <div class="split-card-title">🚗 Registrar Entrada</div>
+
+            <!-- Placa -->
+            <div class="form-group-mb">
+              <label class="form-label">Placa *</label>
+              <input type="text" id="reg-placa" class="form-input form-input-placa"
+                placeholder="ABC-123"
+                oninput="this.value=this.value.toUpperCase();autocompletarClienteReg(this.value)"
+                maxlength="8" />
+            </div>
+
+            <!-- Autocomplete cliente -->
+            <div class="autocomplete-card" id="ac-reg-card">
+              <div class="autocomplete-info">
+                <strong id="ac-reg-nombre"></strong>
+                <span id="ac-reg-celular"></span>
+              </div>
+              <button class="btn btn-secondary" onclick="usarClienteReg()">Usar ✓</button>
+            </div>
+
+            <!-- Tipo vehículo -->
+            <div class="form-group-mb">
+              <label class="form-label">Tipo de vehículo</label>
+              <div class="tipo-vehiculo-grid" id="reg-tipo-grid"></div>
+            </div>
+
+            <!-- Nombre y celular -->
+            <div class="form-group-mb">
+              <label class="form-label">Nombre del cliente</label>
+              <input type="text" id="reg-nombre" class="form-input" placeholder="Nombre del cliente" />
+            </div>
+            <div class="form-group-mb">
+              <label class="form-label">Celular</label>
+              <input type="text" id="reg-celular" class="form-input" placeholder="Número de celular" />
+            </div>
+
+            <!-- Tarifa pactada por día -->
+            <div class="form-group-mb">
+              <label class="form-label">Tarifa por día (S/) *</label>
+              <input type="number" id="reg-tarifa" class="form-input"
+                placeholder="Ej: 15.00" min="0" step="0.50"
+                oninput="sincronizarTarifaMontoReg()" />
+            </div>
+
+            <!-- Cobrar al ingreso -->
+            <div class="cobro-toggle-wrap">
+              <label>¿Cobrar al ingreso?</label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="reg-cobrar" onchange="toggleMontoReg(this.checked)" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="monto-ingreso-wrap" id="reg-monto-wrap">
+              <label class="form-label">Monto al ingreso (S/)</label>
+              <input type="number" id="reg-monto" class="form-input" placeholder="0.00" min="0" step="0.50" />
+            </div>
+
+            <button class="btn btn-success btn-full" id="btn-reg-entrada" onclick="registrarEntradaAdmin()">
+              🚗 Registrar Entrada
+            </button>
+          </div>
+
+          <!-- ═══ COLUMNA DERECHA: SALIDA ═══ -->
+          <div class="split-card">
+            <div class="split-card-title">🏁 Registrar Salida</div>
+
+            <!-- Buscar / filtrar placa -->
+            <div class="form-group-mb">
+              <label class="form-label">Buscar / filtrar placa</label>
+              <div class="sal-buscar-row">
+                <input type="text" id="adm-sal-placa"
+                  class="form-input form-input-placa sal-placa-input"
+                  placeholder="ABC-123"
+                  oninput="this.value=this.value.toUpperCase();filtrarListaRapidaAdmin(this.value)"
+                  onkeydown="if(event.key==='Enter') seleccionarPrimerResultadoAdmin()"
+                  maxlength="8" />
+                <button class="btn btn-secondary sal-buscar-btn"
+                  onclick="buscarAutoSalidaAdmin()">
+                  🔍
+                </button>
+              </div>
+            </div>
+
+            <!-- Lista rápida de vehículos en cochera -->
+            <div class="lista-rapida-wrap">
+              <div class="lista-rapida-titulo">En cochera ahora</div>
+              <div id="adm-lista-rapida" class="lista-rapida">
+                <p class="lista-rapida-vacia">Cargando vehículos...</p>
+              </div>
+            </div>
+
+            <!-- Auto encontrado -->
+            <div class="auto-encontrado" id="adm-auto-encontrado">
+              <div class="auto-encontrado-placa" id="adm-sal-placa-display">—</div>
+              <div class="auto-info-grid">
+                <div>
+                  <span class="info-label">Tipo</span><br/>
+                  <span id="adm-sal-tipo">—</span>
+                </div>
+                <div>
+                  <span class="info-label">Cliente</span><br/>
+                  <span id="adm-sal-cliente">—</span>
+                </div>
+                <div>
+                  <span class="info-label">Entrada</span><br/>
+                  <span id="adm-sal-entrada">—</span>
+                </div>
+                <div>
+                  <span class="info-label">Tiempo</span><br/>
+                  <span id="adm-sal-tiempo" class="sal-tiempo-val">—</span>
+                </div>
+                <div>
+                  <span class="info-label">Ya cobrado</span><br/>
+                  <span id="adm-sal-cobrado-ingreso" class="sal-cobrado-val">—</span>
+                </div>
+                <div>
+                  <span class="info-label">Celular</span><br/>
+                  <span id="adm-sal-celular">—</span>
+                </div>
+              </div>
+              <div class="sal-tarifa-badge" id="adm-sal-tarifa-badge" style="display:none">
+                <span class="sal-tarifa-lbl">📋 Tarifa pactada</span>
+                <span class="sal-tarifa-val" id="adm-sal-tarifa-val">—</span>
+              </div>
+            </div>
+
+            <!-- No encontrado -->
+            <div id="adm-sal-no-encontrado" class="sal-no-encontrado">
+              <div class="sal-no-encontrado-icon">🔍</div>
+              <p style="font-size:0.85rem">No se encontró ningún vehículo con esa placa.</p>
+            </div>
+
+            <!-- Monto manual (solo si no hay tarifa pactada) -->
+            <div class="form-group-mb" id="adm-sal-monto-wrap" style="display:none">
+              <label class="form-label">Monto de salida (S/)</label>
+              <input type="number" id="adm-sal-monto" class="form-input"
+                placeholder="0.00" min="0" step="0.50" />
+              <span class="campo-nota">Dejar en 0 si no se cobra en la salida</span>
+            </div>
+
+            <button class="btn btn-warning btn-full" id="btn-adm-registrar-salida"
+              onclick="iniciarProcesoSalidaAdmin()" style="display:none">
+              🏁 Registrar Salida
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECCIÓN: HISTORIAL ══════════ -->
+    <section class="section" id="section-historial">
+      <div class="content-area">
+        <div class="card card-flush">
+          <div class="historial-header">
+            <div class="historial-title">
+              📋 Historial de Registros
+            </div>
+            <div class="filter-tabs" id="hist-tabs">
+              <button class="filter-tab active" data-filtro="hoy"
+                onclick="cambiarFiltroHist('hoy', this)">Hoy</button>
+              <button class="filter-tab" data-filtro="semana"
+                onclick="cambiarFiltroHist('semana', this)">Esta semana</button>
+              <button class="filter-tab" data-filtro="mes"
+                onclick="cambiarFiltroHist('mes', this)">Este mes</button>
+              <button class="filter-tab" data-filtro="todo"
+                onclick="cambiarFiltroHist('todo', this)">Todo</button>
+            </div>
+          </div>
+          <div class="hist-toolbar">
+            <div class="historial-buscar-wrap">
+              <input type="text" id="hist-buscar"
+                class="form-input hist-buscar-input"
+                placeholder="🔍 Buscar por placa..."
+                oninput="filtrarHistorial()" />
+            </div>
+            <button class="btn-csv" onclick="exportarCSV()" title="Exportar tabla visible a CSV">
+              📥 Exportar CSV
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Placa</th>
+                  <th>Tipo</th>
+                  <th>Cliente</th>
+                  <th>Entrada</th>
+                  <th>Salida</th>
+                  <th>Monto</th>
+                  <th>Trabajador</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-historial">
+                <tr><td colspan="8" class="tabla-cargando">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination-wrap" id="hist-pagination" style="display:none">
+            <span class="pag-info" id="pag-info">Página 1</span>
+            <div class="pag-btns">
+              <button class="pag-btn" id="pag-prev"
+                onclick="cambiarPaginaHist(-1)" disabled>← Anterior</button>
+              <button class="pag-btn" id="pag-next"
+                onclick="cambiarPaginaHist(1)">Siguiente →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECCIÓN: ESTADÍSTICAS ══════════ -->
+    <section class="section" id="section-estadisticas">
+      <div class="content-area">
+
+        <div class="section-label">📊 Resumen de Hoy</div>
+        <div class="stats-grid" style="margin-bottom:24px">
+          <div class="stat-card">
+            <div class="stat-icon yellow">💰</div>
+            <div>
+              <div class="stat-value" id="est-total">S/ 0</div>
+              <div class="stat-label">Total cobrado hoy</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">🚗</div>
+            <div>
+              <div class="stat-value" id="est-cantidad">0</div>
+              <div class="stat-label">Autos atendidos</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">📈</div>
+            <div>
+              <div class="stat-value" id="est-promedio">S/ 0</div>
+              <div class="stat-label">Promedio por auto</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="est-cols">
+          <div class="card">
+            <div class="est-card-title">Por Tipo (Hoy)</div>
+            <div class="est-list">
+              <div class="est-row">
+                <span>🚗 Autos</span>
+                <span class="est-badge green" id="est-tipo-auto">0</span>
+              </div>
+              <div class="est-row">
+                <span>🏍️ Motos</span>
+                <span class="est-badge blue" id="est-tipo-moto">0</span>
+              </div>
+              <div class="est-row">
+                <span>🚙 Camionetas</span>
+                <span class="est-badge yellow" id="est-tipo-camioneta">0</span>
+              </div>
+              <div class="est-row">
+                <span>🚛 Otros</span>
+                <span class="est-badge red" id="est-tipo-otros">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="est-card-title">Esta Semana</div>
+            <div>
+              <div class="est-stat-label">Ingresos totales</div>
+              <div class="est-stat-val yellow" id="est-semana">S/ 0</div>
+              <div class="est-stat-label">Vehículos atendidos</div>
+              <div class="est-stat-val accent" id="est-cant-semana">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="est-center">
+          <button class="btn btn-secondary" onclick="cargarEstadisticas()">🔄 Actualizar</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════ SECCIÓN: USUARIOS ══════════ -->
+    <section class="section" id="section-usuarios">
+      <div class="content-area">
+        <div class="section-header">
+          <span class="section-header-title">👥 Gestión de Usuarios</span>
+          <button class="btn btn-success" onclick="abrirModalNuevoUsuario()">➕ Nuevo Usuario</button>
+        </div>
+        <div class="user-grid" id="lista-usuarios">
+          <p style="color:var(--text3)">Cargando usuarios...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECCIÓN: ALERTAS DE CAJA ══════════ -->
+    <section class="section" id="section-alertas">
+      <div class="content-area">
+        <div class="section-header">
+          <span class="section-header-title">🔔 Alertas de Caja</span>
+          <button class="btn btn-secondary" onclick="cargarAlertas()">
+            🔄 Actualizar
+          </button>
+        </div>
+        <div class="card card-flush">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Placa</th>
+                  <th>Trabajador</th>
+                  <th>Fecha</th>
+                  <th>Monto Sistema</th>
+                  <th>Monto Cobrado</th>
+                  <th>Diferencia</th>
+                  <th>Motivo / Justificación</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-alertas">
+                <tr>
+                  <td colspan="7" class="tabla-cargando">Cargando...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ SECCIÓN: CONFIGURACIÓN ══════════ -->
+    <section class="section" id="section-config">
+      <div class="content-area">
+        <div class="config-grid">
+
+          <div class="config-card">
+            <h3>🅿️ Espacios de Estacionamiento</h3>
+            <div class="form-group-mb">
+              <label class="form-label">Total de espacios</label>
+              <input type="number" id="config-espacios" class="form-input"
+                value="30" min="1" max="9999" placeholder="Ej: 30" />
+            </div>
+            <button class="btn btn-success btn-full" onclick="guardarEspacios()">
+              💾 Guardar
+            </button>
+          </div>
+
+          <div class="config-card">
+            <h3>🎨 Apariencia</h3>
+            <p style="font-size:0.85rem;color:var(--text3);margin-bottom:14px">
+              Alterna entre modo oscuro y modo claro del sistema.
+            </p>
+            <button class="btn btn-secondary btn-full" id="btn-modo-config" onclick="toggleModoManual()">
+              🌙 / ☀️ Cambiar Modo
+            </button>
+          </div>
+
+          <div class="config-card">
+            <h3>ℹ️ Información del Sistema</h3>
+            <div style="font-size:0.85rem;color:var(--text2);line-height:2.2">
+              <div>📦 Versión: <strong>2.0.0</strong></div>
+              <div>🛠️ Motor DB: <strong>Firebase Firestore</strong></div>
+              <div>📱 Táctil-friendly: <strong>✅</strong></div>
+              <div>🖨️ Impresión: <strong>✅</strong></div>
+              <div>👥 Multi-usuario: <strong>✅</strong></div>
+            </div>
+          </div>
+
+          <!-- Solo visible para rol desarrollador -->
+          <div class="config-card config-card-dev" id="card-dev" style="display:none">
+            <h3>🛠️ Herramientas de Desarrollador</h3>
+            <p class="config-dev-nota">
+              Estas opciones son exclusivas del desarrollador del sistema.
+            </p>
+            <button class="btn btn-secondary btn-full"
+              onclick="cargarDemoTurno()" style="margin-bottom:10px">
+              🎭 Cargar Datos Demo (15 vehículos)
+            </button>
+            <button class="btn btn-danger btn-full" onclick="limpiarBaseDatos()" style="margin-bottom:18px">
+              🗑️ Limpiar Base de Datos
+            </button>
+
+            <!-- Logo de empresa -->
+            <div style="border-top:1px solid var(--border);padding-top:16px">
+              <label class="form-label" style="margin-bottom:10px;display:block">🖼️ Logo de la empresa</label>
+              <div id="dev-logo-preview" style="display:none;margin-bottom:10px;text-align:center">
+                <img id="dev-logo-img" src="" alt="Logo actual"
+                  style="max-width:100%;max-height:120px;object-fit:contain;
+                         border-radius:8px;border:1px solid var(--border)" />
+              </div>
+              <input type="file" id="dev-logo-input" accept="image/*"
+                onchange="previsualizarLogo(event)" style="display:none" />
+              <button class="btn btn-secondary btn-full"
+                onclick="document.getElementById('dev-logo-input').click()"
+                style="margin-bottom:8px">
+                📁 Seleccionar imagen
+              </button>
+              <button class="btn btn-success btn-full" id="btn-guardar-logo"
+                onclick="guardarLogo()" style="display:none">
+                💾 Guardar Logo
+              </button>
+              <button class="btn btn-secondary btn-full" id="btn-borrar-logo"
+                onclick="borrarLogo()" style="margin-top:6px;display:none">
+                🗑️ Quitar Logo
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/turnos.js"></script>
+<script src="js/clientes.js"></script>
+<script src="js/vehiculos.js"></script>
+<script src="js/reportes.js"></script>
+<script src="js/pages/dashboard-app.js"></script>
+</body>
+</html>
