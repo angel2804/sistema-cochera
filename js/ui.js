@@ -295,103 +295,78 @@ function imprimirDocumento(html) {
  * Incluye los estilos mínimos para que el ticket se vea correctamente sin depender de styles.css.
  * @param {string} htmlTicket — HTML generado por Reportes.generarHTMLTicket()
  */
-function abrirTicketNuevaPestana(htmlTicket) {
-  const win = window.open('', '_blank');
-  if (!win) {
-    mostrarToast('Permite ventanas emergentes para imprimir el ticket', 'warning');
-    return;
-  }
-  win.document.write(`<!DOCTYPE html>
+function imprimirTicketSilencioso(htmlTicket) {
+  // 1. Crear un Iframe invisible
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  // 2. Extraer el documento del Iframe
+  const win = iframe.contentWindow;
+  const doc = win.document;
+
+  // 3. Inyectar el HTML y el CSS del ticket
+  doc.open();
+  doc.write(`<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Ticket — COCHERA POS</title>
   <style>
     /* ── Tamaño de página térmica 80mm ── */
-    @page {
-      size: 80mm auto;
-      margin: 3mm 1mm;
-    }
+    @page { size: 80mm auto; margin: 3mm 1mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Courier New', Courier, monospace;
-      background: #fff;
-      color: #000;
-      width: 80mm;
-      margin: 0 auto;
-      padding: 4mm 2mm;
+      background: #fff; color: #000;
+      width: 80mm; margin: 0 auto; padding: 4mm 2mm;
       font-size: 9pt;
     }
-    .ticket-wrap { width: 100%; }
-
-    /* Encabezado */
+    
+    /* Layout y Utilidades */
+    .ticket-wrap { width: 100%; border: none; }
     .ticket-encabezado { text-align: center; margin-bottom: 4px; }
     .ticket-logo  { font-size: 11pt; font-weight: 700; letter-spacing: 3px; }
-    .ticket-num   { font-size: 8pt;  color: #444; margin-top: 2px; }
-
-    /* Separadores */
-    .ticket-sep   { text-align: center; font-size: 8pt; color: #666;
-                    margin: 5px 0; letter-spacing: 2px; }
-
-    /* Placa grande */
+    .ticket-num   { font-size: 8pt; color: #444; margin-top: 2px; }
+    .ticket-sep   { text-align: center; font-size: 8pt; color: #666; margin: 5px 0; letter-spacing: 2px; }
+    
+    /* Placa y Datos */
     .ticket-placa-grande {
-      text-align: center;
-      font-size: 20pt;
-      font-weight: 700;
-      letter-spacing: 5px;
-      border: 2px solid #000;
-      border-radius: 3px;
-      padding: 4px 2px;
-      margin: 6px 0;
+      text-align: center; font-size: 20pt; font-weight: 700;
+      letter-spacing: 5px; border: 2px solid #000;
+      border-radius: 3px; padding: 4px 2px; margin: 6px 0;
     }
-
-    /* Filas de datos */
     .ticket-filas { margin-bottom: 6px; }
-    .ticket-fila  {
-      display: flex;
-      justify-content: space-between;
-      font-size: 8.5pt;
-      padding: 2px 0;
-      border-bottom: 1px dashed #aaa;
-    }
+    .ticket-fila  { display: flex; justify-content: space-between; font-size: 8.5pt; padding: 2px 0; border-bottom: 1px dashed #aaa; }
     .ticket-lbl   { color: #555; }
     .ticket-val   { font-weight: 700; text-align: right; max-width: 58%; }
-    .ticket-mono  { font-family: 'Courier New', monospace; }
-
-    /* Total */
+    
+    /* Total y Pie */
     .ticket-total-fila {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 6px;
-      padding-top: 5px;
-      border-top: 2.5px solid #000;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 6px; padding-top: 5px; border-top: 2.5px solid #000;
     }
-    .ticket-total-lbl { font-size: 8pt; font-weight: 700;
-                        letter-spacing: 2px; text-transform: uppercase; }
+    .ticket-total-lbl { font-size: 8pt; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
     .ticket-total-val { font-size: 17pt; font-weight: 700; }
-
-    /* Pie */
-    .ticket-pie {
-      text-align: center;
-      font-size: 7.5pt;
-      color: #555;
-      margin-top: 8px;
-      padding-bottom: 4mm;
-    }
-
-    @media print {
-      body   { padding: 0; width: 100%; }
-      .ticket-wrap { border: none; }
-    }
+    .ticket-pie { text-align: center; font-size: 7.5pt; color: #555; margin-top: 8px; padding-bottom: 4mm; }
   </style>
 </head>
 <body>
   ${htmlTicket}
-  <script>window.onload = function() { window.print(); };<\/script>
 </body>
 </html>`);
-  win.document.close();
+  doc.close();
+
+  // 4. Esperar a que el navegador procese el renderizado y lanzar la impresión
+  setTimeout(() => {
+    win.focus();
+    win.print();
+    
+    // 5. Destruir el Iframe después de imprimir o cancelar para no saturar la memoria
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000); 
+  }, 250);
 }
 
 /**
