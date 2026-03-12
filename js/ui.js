@@ -295,7 +295,7 @@ function imprimirDocumento(html) {
  * Incluye los estilos mínimos para que el ticket se vea correctamente sin depender de styles.css.
  * @param {string} htmlTicket — HTML generado por Reportes.generarHTMLTicket()
  */
-function imprimirTicketSilencioso(htmlTicket) {
+function abrirTicketNuevaPestana(htmlTicket) {
   // 1. Crear un Iframe invisible
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
