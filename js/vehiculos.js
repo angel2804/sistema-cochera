@@ -62,6 +62,8 @@ const Vehiculos = {
       trabajadorEntrada:  turnoTrabajador,
       cobradoAlIngreso:   cobro,
       montoIngreso:       cobro ? (parseFloat(datos.montoIngreso) || 0) : 0,
+      metodoPagoIngreso:  cobro ? (datos.metodoPago || 'Efectivo') : null,
+      dejoLlave:          datos.dejoLlave || false,
       turnoSalidaId:      null,
       trabajadorSalidaId: null,
       trabajadorSalida:   null,
@@ -134,6 +136,7 @@ const Vehiculos = {
         clienteCelular:  docBase.clienteCelular,
         tipo:            'ingreso',
         monto:           docBase.montoIngreso,
+        metodoPago:      docBase.metodoPagoIngreso,
         turnoId,
         trabajadorId:    turnoTrabajadorId,
         trabajador:      turnoTrabajador,
@@ -175,6 +178,7 @@ const Vehiculos = {
     const montoCalculadoSistema = opciones.montoCalculadoSistema ?? montoSalida;
     const motivoModificacion    = opciones.motivoModificacion || null;
     const pagadoIngreso         = opciones.pagadoIngreso || 0;
+    const metodoPago            = opciones.metodoPago || null;
     // saldoEsperado = costoTotal calculado - lo ya pagado al ingreso
     const saldoEsperado  = Math.max(0, montoCalculadoSistema - pagadoIngreso);
     const alertaAuditoria = Math.abs(montoSalida - saldoEsperado) > 0.01;
@@ -216,6 +220,7 @@ const Vehiculos = {
         clienteCelular:         auto.clienteCelular,
         tipo:                   'salida',
         monto:                  montoSalida,
+        metodoPago:             montoSalida > 0 ? (metodoPago || 'Efectivo') : null,
         montoCalculadoSistema,
         alertaAuditoria,
         motivoModificacion:     alertaAuditoria ? motivoModificacion : null,

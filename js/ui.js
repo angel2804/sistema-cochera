@@ -291,82 +291,205 @@ function imprimirDocumento(html) {
 }
 
 /**
+ * Imprime un reporte A4 en nueva ventana con estilos correctos.
+ * Abre una ventana con @page A4 y el HTML del reporte, luego lanza print.
+ * @param {string} html — HTML generado por Reportes.generarHTMLReporte()
+ */
+function imprimirReporteA4(html) {
+  const win = window.open('', '_blank');
+  if (!win) { mostrarToast('Activa las ventanas emergentes para imprimir', 'warning'); return; }
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8"/>
+    <style>
+      @page { size: A4; margin: 10mm 12mm; }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { background: #fff; color: #111; font-family: Arial, Helvetica, sans-serif; }
+    </style>
+  </head><body>${html}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); win.close(); }, 350);
+}
+
+/**
  * Abre el ticket en una nueva pestaña y lanza automáticamente el diálogo de impresión.
  * Incluye los estilos mínimos para que el ticket se vea correctamente sin depender de styles.css.
  * @param {string} htmlTicket — HTML generado por Reportes.generarHTMLTicket()
  */
 function abrirTicketNuevaPestana(htmlTicket) {
-  // 1. Crear un Iframe invisible
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-
-  // 2. Extraer el documento del Iframe
-  const win = iframe.contentWindow;
-  const doc = win.document;
-
-  // 3. Inyectar el HTML y el CSS del ticket
-  doc.open();
-  doc.write(`<!DOCTYPE html>
+  const win = window.open('', '_blank');
+  if (!win) {
+    mostrarToast('Permite ventanas emergentes para imprimir el ticket', 'warning');
+    return;
+  }
+  win.document.write(`<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Ticket — COCHERA POS</title>
   <style>
     /* ── Tamaño de página térmica 80mm ── */
-    @page { size: 80mm auto; margin: 3mm 1mm; }
+    @page {
+      size: 80mm auto;
+      margin: 3mm 1mm;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Courier New', Courier, monospace;
-      background: #fff; color: #000;
-      width: 80mm; margin: 0 auto; padding: 4mm 2mm;
+      background: #fff;
+      color: #000;
+      width: 80mm;
+      margin: 0 auto;
+      padding: 4mm 2mm;
       font-size: 9pt;
     }
-    
-    /* Layout y Utilidades */
-    .ticket-wrap { width: 100%; border: none; }
+    .ticket-wrap { width: 100%; }
+
+    /* Encabezado */
     .ticket-encabezado { text-align: center; margin-bottom: 4px; }
     .ticket-logo  { font-size: 11pt; font-weight: 700; letter-spacing: 3px; }
-    .ticket-num   { font-size: 8pt; color: #444; margin-top: 2px; }
-    .ticket-sep   { text-align: center; font-size: 8pt; color: #666; margin: 5px 0; letter-spacing: 2px; }
-    
-    /* Placa y Datos */
+    .ticket-num   { font-size: 8pt;  color: #444; margin-top: 2px; }
+
+    /* Separadores */
+    .ticket-sep   { text-align: center; font-size: 8pt; color: #666;
+                    margin: 5px 0; letter-spacing: 2px; }
+
+    /* Placa grande */
     .ticket-placa-grande {
-      text-align: center; font-size: 20pt; font-weight: 700;
-      letter-spacing: 5px; border: 2px solid #000;
-      border-radius: 3px; padding: 4px 2px; margin: 6px 0;
+      text-align: center;
+      font-size: 20pt;
+      font-weight: 700;
+      letter-spacing: 5px;
+      border: 2px solid #000;
+      border-radius: 3px;
+      padding: 4px 2px;
+      margin: 6px 0;
     }
+
+    /* Filas de datos */
     .ticket-filas { margin-bottom: 6px; }
-    .ticket-fila  { display: flex; justify-content: space-between; font-size: 8.5pt; padding: 2px 0; border-bottom: 1px dashed #aaa; }
+    .ticket-fila  {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8.5pt;
+      padding: 2px 0;
+      border-bottom: 1px dashed #aaa;
+    }
     .ticket-lbl   { color: #555; }
     .ticket-val   { font-weight: 700; text-align: right; max-width: 58%; }
-    
-    /* Total y Pie */
+    .ticket-mono  { font-family: 'Courier New', monospace; }
+
+    /* Total */
     .ticket-total-fila {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-top: 6px; padding-top: 5px; border-top: 2.5px solid #000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 2.5px solid #000;
     }
-    .ticket-total-lbl { font-size: 8pt; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .ticket-total-lbl { font-size: 8pt; font-weight: 700;
+                        letter-spacing: 2px; text-transform: uppercase; }
     .ticket-total-val { font-size: 17pt; font-weight: 700; }
-    .ticket-pie { text-align: center; font-size: 7.5pt; color: #555; margin-top: 8px; padding-bottom: 4mm; }
+
+    /* Pie */
+    .ticket-pie {
+      text-align: center;
+      font-size: 7.5pt;
+      color: #555;
+      margin-top: 8px;
+      padding-bottom: 4mm;
+    }
+
+    @media print {
+      body   { padding: 0; width: 100%; }
+      .ticket-wrap { border: none; }
+    }
   </style>
 </head>
 <body>
   ${htmlTicket}
+  <script>window.onload = function() { window.print(); };<\/script>
 </body>
 </html>`);
-  doc.close();
+  win.document.close();
+}
 
-  // 4. Esperar a que el navegador procese el renderizado y lanzar la impresión
-  setTimeout(() => {
-    win.focus();
-    win.print();
-    
-    // 5. Destruir el Iframe después de imprimir o cancelar para no saturar la memoria
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 1000); 
-  }, 250);
+/**
+ * Muestra el modal de novedades UNA SOLA VEZ por versión y por navegador.
+ * Clave localStorage: cochera_novedades_<VERSION>
+ * Llamar desde init() de cada página principal.
+ */
+function mostrarNovedades() {
+  const VERSION = 'v4.1';
+  const KEY = `cochera_novedades_${VERSION}`;
+  if (localStorage.getItem(KEY)) return; // ya lo vio
+
+  const html = `
+    <div style="line-height:1.6">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span style="font-size:2rem">🚀</span>
+        <div>
+          <div style="font-size:1.05rem;font-weight:700;color:var(--accent)">
+            Actualización ${VERSION} disponible
+          </div>
+          <div style="font-size:0.8rem;color:var(--text-muted)">
+            Revisa las mejoras implementadas en el sistema
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;
+                    border-left:3px solid var(--accent)">
+          <div style="font-weight:700;margin-bottom:4px">
+            💵 Métodos de pago: Efectivo, Yape y Visa
+          </div>
+          <div style="font-size:0.82rem;color:var(--text-muted)">
+            Al registrar una entrada o salida puedes elegir cómo pagó el cliente.
+            Los reportes y el arqueo ahora muestran el desglose por método.
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;
+                    border-left:3px solid var(--yellow)">
+          <div style="font-weight:700;margin-bottom:4px">
+            🔑 Botón "Dejó llave"
+          </div>
+          <div style="font-size:0.82rem;color:var(--text-muted)">
+            Al ingresar un vehículo puedes marcar si el cliente dejó la llave en la cochera.
+            Queda registrado en el historial.
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;
+                    border-left:3px solid var(--blue)">
+          <div style="font-weight:700;margin-bottom:4px">
+            📊 Dashboard con ingresos por método
+          </div>
+          <div style="font-size:0.82rem;color:var(--text-muted)">
+            La pantalla principal muestra cuánto se cobró en Efectivo, Yape y Visa durante el día.
+          </div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;
+                    border-left:3px solid var(--red)">
+          <div style="font-weight:700;margin-bottom:4px">
+            🖨️ Impresión de reporte mejorada
+          </div>
+          <div style="font-size:0.82rem;color:var(--text-muted)">
+            Al imprimir el reporte de turno ahora se ve igual que el PDF: bien cuadrado en hoja A4.
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  mostrarModal(`✨ Novedades ${VERSION}`, html, [
+    {
+      texto: '¡Entendido!',
+      clase: 'btn-success',
+      accion: () => {
+        localStorage.setItem(KEY, '1');
+        cerrarModal();
+      }
+    }
+  ]);
 }
 
 /**

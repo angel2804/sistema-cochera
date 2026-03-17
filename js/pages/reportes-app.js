@@ -179,7 +179,7 @@ async function imprimirReporte(turnoId) {
   try {
     const cobros = await Reportes.getByTurno(turnoId);
     const htmlReporte = Reportes.generarHTMLReporte(cobros, turno);
-    imprimirDocumento(htmlReporte);
+    imprimirReporteA4(htmlReporte);
   } catch (e) {
     mostrarToast('Error al preparar impresión', 'error');
     console.error(e);

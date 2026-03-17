@@ -20,6 +20,9 @@ let histFirstDocs = [null];   // stack de firstDoc por página (para "Anterior")
 
 let tipoVehiculoReg = 'Auto';
 let clienteRegAC = null;
+let metodoPagoRegAdmin = 'Efectivo';
+let dejoLlaveRegAdmin = false;
+let metodoPagoSalidaAdmin = 'Efectivo';
 
 // ══ INIT ══
 async function init() {
@@ -38,6 +41,7 @@ async function init() {
 
   await cargarDashboard();
   cargarContadorAlertas();
+  setTimeout(mostrarNovedades, 800);
 }
 
 // ══ NAVEGACIÓN ══
@@ -126,9 +130,19 @@ async function cargarDashboard() {
       .where('fechaCobro', '<', manana)
       .get();
 
-    let totalHoy = 0;
-    cobrosHoySnap.forEach(d => { totalHoy += d.data().monto || 0; });
+    let totalHoy = 0, metEf = 0, metYape = 0, metVisa = 0;
+    cobrosHoySnap.forEach(d => {
+      const c = d.data();
+      totalHoy += c.monto || 0;
+      const m = c.metodoPago || 'Efectivo';
+      if (m === 'Yape') metYape += c.monto || 0;
+      else if (m === 'Visa') metVisa += c.monto || 0;
+      else metEf += c.monto || 0;
+    });
     document.getElementById('stat-ingresos').textContent = `S/ ${totalHoy.toFixed(2)}`;
+    document.getElementById('met-hoy-efectivo').textContent = `S/ ${metEf.toFixed(2)}`;
+    document.getElementById('met-hoy-yape').textContent    = `S/ ${metYape.toFixed(2)}`;
+    document.getElementById('met-hoy-visa').textContent    = `S/ ${metVisa.toFixed(2)}`;
 
     // Atendidos hoy (autos con fecha hoy)
     const autosHoySnap = await db.collection('autos')
@@ -173,6 +187,18 @@ function mostrarBannerTurno() {
 }
 
 // ══ REGISTRO ADMIN ══
+function seleccionarMetodoPagoReg(metodo, btn) {
+  metodoPagoRegAdmin = metodo;
+  btn.closest('.metodo-pago-pills').querySelectorAll('.pill-btn')
+    .forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function toggleDejoLlaveReg(btn) {
+  dejoLlaveRegAdmin = !dejoLlaveRegAdmin;
+  btn.classList.toggle('active', dejoLlaveRegAdmin);
+}
+
 function seleccionarTipoVehiculoReg(btn) {
   document.querySelectorAll('#reg-tipo-grid .tipo-vehiculo-btn')
     .forEach(b => b.classList.remove('selected'));
@@ -280,6 +306,8 @@ async function registrarEntradaAdmin() {
       clienteCelular: document.getElementById('reg-celular').value.trim(),
       cobradoAlIngreso: cobrar,
       montoIngreso: monto,
+      metodoPago: cobrar ? metodoPagoRegAdmin : null,
+      dejoLlave: dejoLlaveRegAdmin,
       tarifaPactada: tarifa,
       esPreRegistro: false
     };
@@ -307,6 +335,14 @@ async function registrarEntradaAdmin() {
       .forEach(b => b.classList.remove('selected'));
     document.querySelector('#reg-tipo-grid [data-tipo="Auto"]').classList.add('selected');
     tipoVehiculoReg = 'Auto';
+    // Reset pills y dejó llave
+    metodoPagoRegAdmin = 'Efectivo';
+    dejoLlaveRegAdmin = false;
+    const btnLlave = document.getElementById('btn-reg-dejo-llave');
+    if (btnLlave) btnLlave.classList.remove('active');
+    document.querySelectorAll('#metodo-reg-wrap .pill-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.metodo === 'Efectivo');
+    });
 
     // Actualizar lista rápida de salida
     cargarListaRapidaAdmin();
@@ -445,7 +481,15 @@ function iniciarProcesoSalidaAdmin() {
   }
 }
 
+function seleccionarMetodoPagoSalidaAdmin(metodo, btn) {
+  metodoPagoSalidaAdmin = metodo;
+  btn.closest('.metodo-pago-pills').querySelectorAll('.pill-btn')
+    .forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
 function mostrarModalSalidaAdmin(auto, tarifa) {
+  metodoPagoSalidaAdmin = 'Efectivo'; // reset al abrir el modal
   const desglose      = calcularCostoEstadia(auto.horaEntrada, tarifa);
   const pagadoIngreso = auto.cobradoAlIngreso ? (auto.montoIngreso || 0) : 0;
   const saldoPendiente = Math.max(0, desglose.costoTotal - pagadoIngreso);
@@ -506,11 +550,27 @@ function mostrarModalSalidaAdmin(auto, tarifa) {
           <strong>S/ ${saldoPendiente.toFixed(2)}</strong>
         </div>
       </div>
+      ${auto.cobradoAlIngreso ? `
+      <div class="metodo-badge-ing">
+        💳 Ingreso pagado con ${auto.metodoPagoIngreso || 'Efectivo'}
+        ${auto.dejoLlave ? ' &nbsp;🔑 Dejó llave' : ''}
+      </div>` : (auto.dejoLlave ? '<div class="metodo-badge-ing">🔑 Dejó llave</div>' : '')}
       <div class="salida-input-wrap">
         <label class="form-label">💰 SALDO A COBRAR AHORA (S/)</label>
         <input type="number" id="adm-modal-saldo"
           class="form-input salida-input-monto"
           value="${saldoPendiente.toFixed(2)}" min="0" step="0.50" />
+      </div>
+      <div class="metodo-pago-wrap" id="metodo-adm-sal-wrap" style="margin-top:10px">
+        <div class="arqueo-seccion-lbl">Método de pago</div>
+        <div class="metodo-pago-pills">
+          <button class="pill-btn selected" data-metodo="Efectivo"
+            onclick="seleccionarMetodoPagoSalidaAdmin('Efectivo', this)">💵 Efectivo</button>
+          <button class="pill-btn pill-yape" data-metodo="Yape"
+            onclick="seleccionarMetodoPagoSalidaAdmin('Yape', this)">💜 Yape</button>
+          <button class="pill-btn pill-visa" data-metodo="Visa"
+            onclick="seleccionarMetodoPagoSalidaAdmin('Visa', this)">💳 Visa</button>
+        </div>
       </div>
       <div id="adm-motivo-auditoria-wrap" style="display:none">
         <label class="form-label salida-auditoria-label">
@@ -555,10 +615,10 @@ async function confirmarSalidaModalAdmin(costoSistema, pagadoIngreso) {
     return;
   }
   cerrarModal();
-  await ejecutarRegistroSalidaAdmin(montoReal, costoSistema, motivo, pagadoIngreso);
+  await ejecutarRegistroSalidaAdmin(montoReal, costoSistema, motivo, pagadoIngreso, metodoPagoSalidaAdmin);
 }
 
-async function ejecutarRegistroSalidaAdmin(montoReal, montoSistema, motivo, pagadoIngreso = 0) {
+async function ejecutarRegistroSalidaAdmin(montoReal, montoSistema, motivo, pagadoIngreso = 0, metodoPago = null) {
   const btn = document.getElementById('btn-adm-registrar-salida');
   btn.disabled    = true;
   btn.textContent = 'Registrando...';
@@ -572,7 +632,7 @@ async function ejecutarRegistroSalidaAdmin(montoReal, montoSistema, motivo, paga
       montoReal,
       turnoActual,
       sesion,
-      { montoCalculadoSistema: montoSistema, motivoModificacion: motivo, pagadoIngreso }
+      { montoCalculadoSistema: montoSistema, motivoModificacion: motivo, pagadoIngreso, metodoPago }
     );
     mostrarToast(`✅ Salida registrada: ${resultado.placa}`, 'success');
     limpiarFormSalidaAdmin();
@@ -593,6 +653,7 @@ async function ejecutarRegistroSalidaAdmin(montoReal, montoSistema, motivo, paga
 
 function limpiarFormSalidaAdmin() {
   autoParaSalidaAdmin = null;
+  metodoPagoSalidaAdmin = 'Efectivo';
   document.getElementById('adm-sal-placa').value = '';
   document.getElementById('adm-sal-monto').value = '';
   document.getElementById('adm-auto-encontrado').classList.remove('visible');
@@ -889,8 +950,15 @@ async function cargarEstadisticas() {
       .where('fechaCobro', '>=', hoy)
       .where('fechaCobro', '<', manana)
       .get();
-    let totalHoy = 0;
-    cobrosHoySnap.forEach(d => { totalHoy += d.data().monto || 0; });
+    let totalHoy = 0, estEf = 0, estYape = 0, estVisa = 0;
+    cobrosHoySnap.forEach(d => {
+      const c = d.data();
+      totalHoy += c.monto || 0;
+      const m = c.metodoPago || 'Efectivo';
+      if (m === 'Yape') estYape += c.monto || 0;
+      else if (m === 'Visa') estVisa += c.monto || 0;
+      else estEf += c.monto || 0;
+    });
 
     // Autos atendidos hoy (salidos + dentro)
     const autosHoySnap = await db.collection('autos')
@@ -913,6 +981,9 @@ async function cargarEstadisticas() {
     document.getElementById('est-total').textContent = `S/ ${totalHoy.toFixed(2)}`;
     document.getElementById('est-cantidad').textContent = cantHoy;
     document.getElementById('est-promedio').textContent = `S/ ${promedio.toFixed(2)}`;
+    document.getElementById('est-met-efectivo').textContent = `S/ ${estEf.toFixed(2)}`;
+    document.getElementById('est-met-yape').textContent    = `S/ ${estYape.toFixed(2)}`;
+    document.getElementById('est-met-visa').textContent    = `S/ ${estVisa.toFixed(2)}`;
     document.getElementById('est-tipo-auto').textContent = autos;
     document.getElementById('est-tipo-moto').textContent = motos;
     document.getElementById('est-tipo-camioneta').textContent = camionetas;

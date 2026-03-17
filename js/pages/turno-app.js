@@ -12,6 +12,9 @@ let tipoVehiculoSeleccionado = 'Auto';
 let autoParaSalida = null;
 let clienteAutocompletado = null;
 let listaCocheraData = [];    // cache de vehículos en cochera para lista rápida
+let metodoPagoIngreso = 'Efectivo';
+let dejoLlave = false;
+let metodoPagoSalida = 'Efectivo';
 
 // ══ INIT ══
 async function init() {
@@ -44,6 +47,7 @@ async function init() {
     mostrarPantallaInit();
     await cargarTurnoAsignado();
   }
+  setTimeout(mostrarNovedades, 800);
 }
 
 function mostrarPantallaInit() {
@@ -141,7 +145,15 @@ async function confirmarCerrarTurno() {
   const totalSalidas = cobros
     .filter(c => c.tipo === 'salida')
     .reduce((s, c) => s + (c.monto || 0), 0);
-  const totalEsperado = totalIngresos + totalSalidas;
+  const totalGeneral = totalIngresos + totalSalidas;
+
+  // Desglose por método (cobros sin método se tratan como Efectivo)
+  const suma = (metodo) => cobros
+    .filter(c => (c.metodoPago || 'Efectivo') === metodo)
+    .reduce((s, c) => s + (c.monto || 0), 0);
+  const totalEfectivo = suma('Efectivo');
+  const totalYape     = suma('Yape');
+  const totalVisa     = suma('Visa');
 
   const htmlArqueo = `
     <div class="modal-confirm-center">
@@ -152,7 +164,8 @@ async function confirmarCerrarTurno() {
     </div>
 
     <div class="arqueo-box">
-      <div class="arqueo-title">📊 Arqueo de Caja</div>
+      <div class="arqueo-title">📊 Resumen del Turno</div>
+
       <div class="arqueo-fila">
         <span class="arqueo-fila-lbl">Cobros al ingreso</span>
         <span class="arqueo-fila-val">S/ ${totalIngresos.toFixed(2)}</span>
@@ -162,27 +175,63 @@ async function confirmarCerrarTurno() {
         <span class="arqueo-fila-val">S/ ${totalSalidas.toFixed(2)}</span>
       </div>
       <div class="arqueo-fila">
-        <span class="arqueo-fila-lbl">Total esperado en caja</span>
-        <span class="arqueo-fila-val" style="color:var(--accent)">
-          S/ ${totalEsperado.toFixed(2)}
-        </span>
+        <span class="arqueo-fila-lbl">Total registrado</span>
+        <span class="arqueo-fila-val" style="color:var(--accent)">S/ ${totalGeneral.toFixed(2)}</span>
       </div>
       <div class="arqueo-fila">
-        <span class="arqueo-fila-lbl">${cobros.length} cobro(s) registrado(s)</span>
+        <span class="arqueo-fila-lbl">${cobros.length} cobro(s)</span>
         <span></span>
       </div>
 
+      <!-- Desglose por método -->
+      <div class="arqueo-seccion-lbl" style="margin-top:12px">Desglose por método</div>
+      <div class="arqueo-metodos">
+        <div class="arqueo-metodo-card efectivo">
+          <span class="arqueo-metodo-icon">💵</span>
+          <span class="arqueo-metodo-lbl">Efectivo</span>
+          <span class="arqueo-metodo-val">S/ ${totalEfectivo.toFixed(2)}</span>
+        </div>
+        <div class="arqueo-metodo-card yape">
+          <span class="arqueo-metodo-icon">💜</span>
+          <span class="arqueo-metodo-lbl">Yape</span>
+          <span class="arqueo-metodo-val">S/ ${totalYape.toFixed(2)}</span>
+        </div>
+        <div class="arqueo-metodo-card visa">
+          <span class="arqueo-metodo-icon">💳</span>
+          <span class="arqueo-metodo-lbl">Visa</span>
+          <span class="arqueo-metodo-val">S/ ${totalVisa.toFixed(2)}</span>
+        </div>
+      </div>
+
       <div class="arqueo-efectivo-wrap">
-        <label class="form-label">Efectivo entregado (S/)</label>
+        <label class="form-label">💵 Efectivo a entregar (S/)</label>
         <input type="number" id="arqueo-efectivo"
           class="form-input" placeholder="0.00" min="0" step="0.50"
-          oninput="calcularArqueo(${totalEsperado.toFixed(2)})" />
+          oninput="calcularArqueo(${totalEfectivo.toFixed(2)}, ${totalYape.toFixed(2)})" />
+        <span class="campo-nota" style="font-size:0.72rem">
+          Esperado en caja: S/ ${totalEfectivo.toFixed(2)}
+        </span>
       </div>
 
       <div class="arqueo-diferencia exacto" id="arqueo-diferencia-box">
-        <span class="arqueo-diferencia-lbl">Diferencia</span>
+        <span class="arqueo-diferencia-lbl">Diferencia efectivo</span>
         <span class="arqueo-diferencia-val" id="arqueo-diferencia-val">S/ 0.00</span>
       </div>
+
+      ${totalYape > 0 ? `
+      <div class="arqueo-efectivo-wrap" style="margin-top:10px">
+        <label class="form-label">💜 Yape recibido (S/)</label>
+        <input type="number" id="arqueo-yape"
+          class="form-input" placeholder="${totalYape.toFixed(2)}" min="0" step="0.50"
+          oninput="calcularArqueo(${totalEfectivo.toFixed(2)}, ${totalYape.toFixed(2)})" />
+        <span class="campo-nota" style="font-size:0.72rem">
+          Yape registrado en sistema: S/ ${totalYape.toFixed(2)}
+        </span>
+      </div>
+      <div class="arqueo-diferencia exacto" id="arqueo-yape-dif-box">
+        <span class="arqueo-diferencia-lbl">Diferencia Yape</span>
+        <span class="arqueo-diferencia-val" id="arqueo-yape-dif-val">S/ 0.00</span>
+      </div>` : ''}
     </div>`;
 
   mostrarModal('🔴 Cerrar Turno — Arqueo', htmlArqueo, [
@@ -190,11 +239,10 @@ async function confirmarCerrarTurno() {
       texto: '🔴 Confirmar cierre',
       clase: 'btn-danger',
       accion: async () => {
-        const efectivo = parseFloat(
-          document.getElementById('arqueo-efectivo')?.value
-        ) || 0;
+        const efectivo = parseFloat(document.getElementById('arqueo-efectivo')?.value) || 0;
+        const yapeRecibido = parseFloat(document.getElementById('arqueo-yape')?.value) || 0;
         cerrarModal();
-        await cerrarTurno(cobros, efectivo, totalEsperado);
+        await cerrarTurno(cobros, efectivo, totalGeneral, yapeRecibido);
       }
     },
     { texto: 'Cancelar', clase: 'btn-secondary', accion: cerrarModal }
@@ -202,34 +250,38 @@ async function confirmarCerrarTurno() {
 }
 
 // Recalcula diferencia en tiempo real dentro del modal de arqueo
-function calcularArqueo(totalEsperado) {
-  const efectivo = parseFloat(
-    document.getElementById('arqueo-efectivo')?.value
-  ) || 0;
-  const diferencia = efectivo - totalEsperado;
+function calcularArqueo(totalEfEsperado, totalYapeEsperado = 0) {
+  // — Efectivo —
+  const efectivo = parseFloat(document.getElementById('arqueo-efectivo')?.value) || 0;
+  const dEf = efectivo - totalEfEsperado;
   const box = document.getElementById('arqueo-diferencia-box');
   const val = document.getElementById('arqueo-diferencia-val');
-  if (!box || !val) return;
-
-  box.className = 'arqueo-diferencia';
-  let label = 'S/ 0.00';
-  if (diferencia > 0.005) {
-    box.classList.add('sobrante');
-    label = `+S/ ${diferencia.toFixed(2)} (sobrante)`;
-  } else if (diferencia < -0.005) {
-    box.classList.add('faltante');
-    label = `-S/ ${Math.abs(diferencia).toFixed(2)} (faltante)`;
-  } else {
-    box.classList.add('exacto');
-    label = 'S/ 0.00 ✓ Exacto';
+  if (box && val) {
+    box.className = 'arqueo-diferencia';
+    if (dEf > 0.005)       { box.classList.add('sobrante'); val.textContent = `+S/ ${dEf.toFixed(2)} (sobrante)`; }
+    else if (dEf < -0.005) { box.classList.add('faltante'); val.textContent = `-S/ ${Math.abs(dEf).toFixed(2)} (faltante)`; }
+    else                   { box.classList.add('exacto');   val.textContent = 'S/ 0.00 ✓ Exacto'; }
   }
-  val.textContent = label;
+  // — Yape —
+  if (totalYapeEsperado > 0) {
+    const yape = parseFloat(document.getElementById('arqueo-yape')?.value) || 0;
+    const dY = yape - totalYapeEsperado;
+    const boxY = document.getElementById('arqueo-yape-dif-box');
+    const valY = document.getElementById('arqueo-yape-dif-val');
+    if (boxY && valY) {
+      boxY.className = 'arqueo-diferencia';
+      if (dY > 0.005)       { boxY.classList.add('sobrante'); valY.textContent = `+S/ ${dY.toFixed(2)} (sobrante)`; }
+      else if (dY < -0.005) { boxY.classList.add('faltante'); valY.textContent = `-S/ ${Math.abs(dY).toFixed(2)} (faltante)`; }
+      else                  { boxY.classList.add('exacto');   valY.textContent = 'S/ 0.00 ✓ Exacto'; }
+    }
+  }
 }
 
-async function cerrarTurno(cobros, efectivoEntregado, totalEsperado) {
+async function cerrarTurno(cobros, efectivoEntregado, totalEsperado, yapeRecibido = 0) {
   try {
     await Turnos.cerrar(turnoActivo.id, {
       efectivoEntregado,
+      yapeRecibido,
       totalEsperado,
       diferencia: efectivoEntregado - totalEsperado
     });
@@ -237,6 +289,7 @@ async function cerrarTurno(cobros, efectivoEntregado, totalEsperado) {
     const turnoData = { ...turnoActivo, fin: new Date() };
     const htmlReporte = Reportes.generarHTMLReporte(cobros, turnoData, {
       efectivoEntregado,
+      yapeRecibido,
       totalEsperado,
       diferencia: efectivoEntregado - totalEsperado
     });
@@ -247,7 +300,7 @@ async function cerrarTurno(cobros, efectivoEntregado, totalEsperado) {
       {
         texto: '🖨️ Imprimir',
         clase: 'btn-secondary',
-        accion: () => imprimirDocumento(htmlReporte)
+        accion: () => imprimirReporteA4(htmlReporte)
       },
       {
         texto: '📄 PDF',
@@ -432,6 +485,23 @@ function toggleMontoIngreso(checked) {
   }
 }
 
+// ══ MÉTODO DE PAGO (compartido: entrada y salida) ══
+// grupo: 'ent' (entrada) | 'sal' (salida — dentro del modal)
+function seleccionarMetodoPago(metodo, btn, grupo) {
+  const contenedor = btn.closest('.metodo-pago-pills');
+  if (!contenedor) return;
+  contenedor.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  if (grupo === 'ent') metodoPagoIngreso = metodo;
+  else metodoPagoSalida = metodo;
+}
+
+function toggleDejoLlave(btn) {
+  dejoLlave = !dejoLlave;
+  btn.classList.toggle('active', dejoLlave);
+  btn.textContent = dejoLlave ? '🔑 Dejó llave ✓' : '🔑 Dejó llave';
+}
+
 // Sincroniza el monto de ingreso con la tarifa si el toggle está activo
 function sincronizarTarifaMonto() {
   if (!document.getElementById('ent-cobrar')?.checked) return;
@@ -489,13 +559,12 @@ async function registrarEntrada() {
       cobradoAlIngreso: cobrar,
       montoIngreso:     monto,
       tarifaPactada:    tarifa,
+      metodoPago:       cobrar ? metodoPagoIngreso : null,
+      dejoLlave:        dejoLlave,
       esPreRegistro:    false
     };
 
     const resultado = await Vehiculos.registrarEntrada(datos, turnoActivo, sesion);
-
-    // Abrir ticket en nueva pestaña para impresión inmediata
-    abrirTicketNuevaPestana(Reportes.generarHTMLTicket(resultado));
 
     beep('success');
     mostrarToast(`✅ Entrada registrada: ${placa}`, 'success');
@@ -532,6 +601,13 @@ function limpiarFormEntrada() {
   document.querySelectorAll('#ent-tipo-grid .tipo-vehiculo-btn').forEach(b => b.classList.remove('selected'));
   document.querySelector('#ent-tipo-grid [data-tipo="Auto"]').classList.add('selected');
   tipoVehiculoSeleccionado = 'Auto';
+  // Resetear método de pago y llave
+  metodoPagoIngreso = 'Efectivo';
+  dejoLlave = false;
+  const pills = document.querySelectorAll('#metodo-ingreso-wrap .pill-btn');
+  pills.forEach(b => b.classList.toggle('selected', b.dataset.metodo === 'Efectivo'));
+  const btnLlave = document.getElementById('btn-dejo-llave');
+  if (btnLlave) { btnLlave.classList.remove('active'); btnLlave.textContent = '🔑 Dejó llave'; }
 }
 
 // ══ LISTA RÁPIDA DE SALIDA ══
@@ -734,6 +810,19 @@ function mostrarModalSalida(auto, tarifa) {
         </div>
       </div>
 
+      ${auto.cobradoAlIngreso && auto.metodoPagoIngreso ? `
+      <div style="margin-top:4px">
+        <span class="metodo-badge-ing">
+          ${auto.metodoPagoIngreso === 'Yape' ? '💜' : auto.metodoPagoIngreso === 'Visa' ? '💳' : '💵'}
+          Ingreso pagado con ${auto.metodoPagoIngreso}
+        </span>
+      </div>` : ''}
+
+      ${auto.dejoLlave ? `
+      <div style="margin-top:4px">
+        <span class="metodo-badge-ing">🔑 Dejó llave</span>
+      </div>` : ''}
+
       <div class="salida-input-wrap">
         <label class="form-label">💰 SALDO A COBRAR AHORA (S/)</label>
         <input type="number" id="modal-saldo-cobrar"
@@ -741,6 +830,19 @@ function mostrarModalSalida(auto, tarifa) {
           value="${saldoPendiente.toFixed(2)}"
           min="0" step="0.50" />
       </div>
+
+      ${saldoPendiente > 0 ? `
+      <div class="metodo-pago-wrap" style="margin-top:6px">
+        <div class="arqueo-seccion-lbl">Método de pago salida</div>
+        <div class="metodo-pago-pills" id="sal-metodo-pills">
+          <button class="pill-btn selected" data-metodo="Efectivo"
+            onclick="seleccionarMetodoPago('Efectivo', this, 'sal')">💵 Efectivo</button>
+          <button class="pill-btn pill-yape" data-metodo="Yape"
+            onclick="seleccionarMetodoPago('Yape', this, 'sal')">💜 Yape</button>
+          <button class="pill-btn pill-visa" data-metodo="Visa"
+            onclick="seleccionarMetodoPago('Visa', this, 'sal')">💳 Visa</button>
+        </div>
+      </div>` : ''}
 
       <div id="motivo-auditoria-wrap" style="display:none">
         <label class="form-label salida-auditoria-label">
@@ -793,14 +895,17 @@ async function confirmarSalidaModal(costoSistema, pagadoIngreso) {
     return;
   }
 
+  // Método de pago: si no hay saldo pendiente, no aplica método
+  const metodo = saldoPendiente > 0 ? metodoPagoSalida : null;
+
   cerrarModal();
   // montoCalculadoSistema = costoSistema completo (ingreso + saldo)
-  await ejecutarRegistroSalida(montoReal, costoSistema, motivo, pagadoIngreso);
+  await ejecutarRegistroSalida(montoReal, costoSistema, motivo, pagadoIngreso, metodo);
 }
 
 // ══ EJECUTAR REGISTRO DE SALIDA (punto único de escritura a Firestore) ══
 async function ejecutarRegistroSalida(
-  montoRealCobrado, montoCalculadoSistema, motivoModificacion, pagadoIngreso = 0
+  montoRealCobrado, montoCalculadoSistema, motivoModificacion, pagadoIngreso = 0, metodoPago = null
 ) {
   const btn = document.getElementById('btn-registrar-salida');
   btn.disabled    = true;
@@ -812,7 +917,7 @@ async function ejecutarRegistroSalida(
       montoRealCobrado,
       turnoActivo,
       sesion,
-      { montoCalculadoSistema, motivoModificacion, pagadoIngreso }
+      { montoCalculadoSistema, motivoModificacion, pagadoIngreso, metodoPago }
     );
     beep('success');
     mostrarToast(`✅ Salida registrada: ${resultado.placa}`, 'success');
@@ -836,6 +941,7 @@ async function ejecutarRegistroSalida(
 
 function limpiarFormSalida() {
   autoParaSalida = null;
+  metodoPagoSalida = 'Efectivo';
   document.getElementById('sal-placa').value = '';
   document.getElementById('sal-monto').value = '';
   document.getElementById('auto-encontrado').classList.remove('visible');
